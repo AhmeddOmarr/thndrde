@@ -7,15 +7,13 @@ import {Checkbox, Form, Input } from 'antd';
 import Antform from "./components/Login";
 import Fbutton from "./components/Button";
 import FirstC from "./components/FirstC";
+import Movieslist from "./components/Movies";
 
 export default function Home() {
   return (
     <main className={styles.main}>
-      <div>
-        <FirstC/>
-        </div>
         <div>
-        <Antform/>
+        <Movieslist/>
         <Fbutton/>
         </div>
     </main>
