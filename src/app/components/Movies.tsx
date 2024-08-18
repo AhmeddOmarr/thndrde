@@ -17,6 +17,7 @@ type Movie = {
 const Movieslist: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [noMoviesFound, setNoMoviesFound] = useState<boolean>(false);
 
   useEffect(() => {
     if (searchQuery) {
@@ -25,9 +26,17 @@ const Movieslist: React.FC = () => {
         .then((data) => {
           if (data.Search) {
             setMovies(data.Search);
+            setNoMoviesFound(false);
+          } else {
+            setMovies([]);
+            setNoMoviesFound(true);
           }
         })
-        .catch((error) => console.error("Error fetching movies:", error));
+        .catch((error) => {
+          console.error("Error fetching movies:", error);
+          setMovies([]);
+          setNoMoviesFound(true);
+        });
     }
   }, [searchQuery]);
 
@@ -38,24 +47,28 @@ const Movieslist: React.FC = () => {
   return (
     <div>
       <SearchBar onSearch={handleSearch} />
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {movies.map((movie) => (
-          <Card
-            key={movie.imdbID}
-            hoverable
-            style={{ width: 240, margin: '10px' }}
-            cover={
-              <img
-                alt={`${movie.Title} Poster`}
-                src={movie.Poster !== 'N/A' ? movie.Poster : 'default-image-url.jpg'}
-                style={{ width: '100%', height: 'auto' }}
-              />
-            }
-          >
-            <Meta title={movie.Title} description={movie.Year} />
-          </Card>
-        ))}
-      </div>
+      {noMoviesFound ? (
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>No movies found.</div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {movies.map((movie) => (
+            <Card
+              key={movie.imdbID}
+              hoverable
+              style={{ width: 240, margin: '10px' }}
+              cover={
+                <img
+                  alt={`${movie.Title} Poster`}
+                  src={movie.Poster !== 'N/A' ? movie.Poster : 'default-image-url.jpg'}
+                  style={{ width: '100%', height: 'auto' }}
+                />
+              }
+            >
+              <Meta title={movie.Title} description={movie.Year} />
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
