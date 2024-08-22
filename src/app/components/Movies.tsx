@@ -78,16 +78,16 @@ const Movieslist: React.FC = () => {
   );
 };
 
+// Set displayName for Movieslist
 Movieslist.displayName = "Movieslist";
 
-export default () => {
-  const Films: React.FC = () => (
-    <QueryClientProvider client={queryClient}>
-      <Movieslist />
-    </QueryClientProvider>
-  );
+const App: React.FC = () => (
+  <QueryClientProvider client={queryClient}>
+    <Movieslist />
+  </QueryClientProvider>
+);
 
-  Films.displayName = "Films";
+// Set displayName for App
+App.displayName = "App";
 
-  return <Films />;
-};
+export default App;
