@@ -37,6 +37,7 @@ const Movieslist: React.FC = () => {
     queryKey: ["movies", searchQuery],
     queryFn: () => fetchMovies(searchQuery),
     enabled: !!searchQuery,
+    staleTime: 15000, // Cache data for 15 seconds
   });
 
   const movies = data as Movie[];
