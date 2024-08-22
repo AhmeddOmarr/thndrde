@@ -8,13 +8,13 @@ import Antform from "./components/Login";
 import Fbutton from "./components/Button";
 import FirstC from "./components/FirstC";
 import Movieslist from "./components/Movies";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function Home() {
+  
   return (
+
     <main className={styles.main}>
-      <div>
-        <FirstC/>
-      </div>
         <div>
         <Movieslist/>
         <Fbutton/>

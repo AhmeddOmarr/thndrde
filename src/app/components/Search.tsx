@@ -21,7 +21,7 @@ const handleSearch = (value: string) => {
 
 return (
     <Search
-    placeholder="input search text"
+    placeholder="Type Movie name..."
     enterButton="Search"
     size="large"
     value={searchValue}

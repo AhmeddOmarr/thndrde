@@ -1,10 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Card } from "antd";
-import 'antd/dist/reset.css';
+import "antd/dist/reset.css";
 import SearchBar from "./Search";
+import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const { Meta } = Card;
+const queryClient = new QueryClient();
 
 type Movie = {
   Title: string;
@@ -14,63 +16,70 @@ type Movie = {
   Poster: string;
 };
 
-const Movieslist: React.FC = () => {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [noMoviesFound, setNoMoviesFound] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (searchQuery) {
-      fetch(`https://www.omdbapi.com/?apikey=8bdf708a&s=${searchQuery}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.Search) {
-            setMovies(data.Search);
-            setNoMoviesFound(false);
-          } else {
-            setMovies([]);
-            setNoMoviesFound(true);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching movies:", error);
-          setMovies([]);
-          setNoMoviesFound(true);
-        });
+const fetchMovies = async (searchQuery: string): Promise<Movie[]> => {
+  try {
+    const response = await fetch(`https://www.omdbapi.com/?apikey=8bdf708a&s=${searchQuery}`);
+    const data = await response.json();
+    if (data.Error) {
+      throw new Error(data.Error);
     }
-  }, [searchQuery]);
+    return data.Search || [];
+  } catch (error) {
+    console.error("Error fetching movies:", error);
+    return [];
+  }
+};
+
+const Movieslist: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const { data = [], isLoading, isError } = useQuery<Movie[]>({
+    queryKey: ["movies", searchQuery],
+    queryFn: () => fetchMovies(searchQuery),
+    enabled: !!searchQuery,
+  });
+
+  const movies = data as Movie[];
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError || (movies.length === 0 && searchQuery)) {
+    return <div style={{ textAlign: 'center', marginTop: '20px' }}>No movies found.</div>;
+  }
+
   return (
     <div>
       <SearchBar onSearch={handleSearch} />
-      {noMoviesFound ? (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>No movies found.</div>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {movies.map((movie) => (
-            <Card
-              key={movie.imdbID}
-              hoverable
-              style={{ width: 240, margin: '10px' }}
-              cover={
-                <img
-                  alt={`${movie.Title} Poster`}
-                  src={movie.Poster !== 'N/A' ? movie.Poster : 'default-image-url.jpg'}
-                  style={{ width: '100%', height: 'auto' }}
-                />
-              }
-            >
-              <Meta title={movie.Title} description={movie.Year} />
-            </Card>
-          ))}
-        </div>
-      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {movies.map((movie) => (
+          <Card
+            key={movie.imdbID}
+            hoverable
+            style={{ width: 240, margin: '10px' }}
+            cover={
+              <img
+                alt={`${movie.Title} Poster`}
+                src={movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/240x360?text=No+Image'}
+                style={{ width: '100%', height: 'auto' }}
+              />
+            }
+          >
+            <Meta title={movie.Title} description={movie.Year} />
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
 
-export default Movieslist;
+export default () => (
+  <QueryClientProvider client={queryClient}>
+    <Movieslist />
+  </QueryClientProvider>
+);
